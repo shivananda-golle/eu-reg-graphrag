@@ -41,6 +41,21 @@ def norm(s: str) -> str:
     return s.replace("\xa0", " ").strip()
 
 
+def cell_label_text(cells) -> tuple[str, str] | None:
+    """Split a point/item row into (label, text) by CONTENT, not position.
+
+    Some tables are 2-cell (`['1.', 'text']`, e.g. Annex III) and some have a
+    leading empty spacer cell (`['', '1.', 'text']`, e.g. Annex I). Dropping
+    empty cells first makes both layouts work: first non-empty = label, rest =
+    text. Returns None if there isn't a label + text pair.
+    """
+    vals = [norm(c.get_text(" ")) for c in cells]
+    vals = [v for v in vals if v]
+    if len(vals) < 2:
+        return None
+    return vals[0], " ".join(vals[1:])
+
+
 def _extract_blocks(children) -> tuple[list[str], list[dict]]:
     """Walk a list of sibling elements in document order, separating prose from
     points. Returns (ordered_text_blocks, structured_points).
@@ -58,10 +73,9 @@ def _extract_blocks(children) -> tuple[list[str], list[dict]]:
         elif child.name == "table":
             own_rows = [r for r in child.find_all("tr") if r.find_parent("table") is child]
             for row in own_rows:
-                cells = row.find_all(["td", "th"], recursive=False)
-                if len(cells) >= 2:
-                    label = norm(cells[0].get_text(" "))
-                    ptext = norm(cells[1].get_text(" "))
+                lt = cell_label_text(row.find_all(["td", "th"], recursive=False))
+                if lt:
+                    label, ptext = lt
                     points.append({"label": label, "text": ptext})
                     ordered.append(f"{label} {ptext}")
     return ordered, points
@@ -174,11 +188,9 @@ def parse_annexes(soup) -> list[dict]:
                 parts.append(text)
             if ch.name == "table":  # structured item (label, text) when present
                 row = ch.find("tr")
-                cells = row.find_all(["td", "th"], recursive=False) if row else []
-                if len(cells) >= 2:
-                    items.append(
-                        {"label": norm(cells[0].get_text(" ")), "text": norm(cells[1].get_text(" "))}
-                    )
+                lt = cell_label_text(row.find_all(["td", "th"], recursive=False)) if row else None
+                if lt:
+                    items.append({"label": lt[0], "text": lt[1]})
 
         annexes.append(
             {"id": cont.get("id"), "label": label, "roman": roman, "title": title,
