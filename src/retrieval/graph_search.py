@@ -47,6 +47,19 @@ def _lucene_clean(query: str) -> str:
     return " ".join(w for w in words if len(w) > 2 and w not in STOPWORDS)
 
 
+_EXPLICIT_ART = re.compile(r"article\s+(\d+)", re.I)
+_EXPLICIT_ANX = re.compile(r"annex\s+([ivxlc]+)\b", re.I)
+
+
+def explicit_seeds(query: str) -> list[str]:
+    """Node ids for provisions named directly in the query (e.g. 'Article 6' ->
+    art_6). Full-text can't anchor on these reliably (it drops the number), so we
+    seed them straight away."""
+    seeds = [f"art_{int(m.group(1))}" for m in _EXPLICIT_ART.finditer(query)]
+    seeds += [f"anx_{m.group(1).upper()}" for m in _EXPLICIT_ANX.finditer(query)]
+    return seeds
+
+
 def entry_nodes(driver, query: str, k: int = 5) -> list[dict]:
     """Top-k entry nodes by full-text relevance."""
     records = driver.execute_query(
@@ -74,15 +87,15 @@ def cite_from_id(nid: str) -> str:
     return nid
 
 
-def graph_retrieve(driver, query: str, k_entry: int = 3, max_units: int = 10) -> list[dict]:
-    """Entry lookup + 1-hop REFERENCES expansion -> text units with citations.
+def expand_from_seeds(driver, seeds: list[str], max_units: int = 10) -> list[dict]:
+    """1-hop REFERENCES expansion from given seed node ids -> text units.
 
-    The graph's edge over vector search: it pulls in REFERENCES-linked provisions
-    (e.g. Article 6 -> Annex III) even when their wording doesn't match the query.
-    Article nodes carry only a title, so they're expanded to their paragraph text.
+    Shared by graph retrieval (seeds from full-text) and hybrid retrieval (seeds
+    from vector search). The graph's edge: it pulls in REFERENCES-linked
+    provisions (e.g. Article 6 -> Annex III) even when their wording doesn't
+    match the query. Article nodes carry only a title, so they're expanded to
+    their paragraph text.
     """
-    seeds = [r["id"] for r in entry_nodes(driver, query, k_entry)]
-
     # Focus set = seeds + the nodes they reference (1 hop out).
     rows = driver.execute_query(
         "UNWIND $ids AS sid MATCH (s {id: sid}) "
@@ -136,6 +149,12 @@ def graph_retrieve(driver, query: str, k_entry: int = 3, max_units: int = 10) ->
             if len(units) >= max_units:
                 return units
     return units
+
+
+def graph_retrieve(driver, query: str, k_entry: int = 3, max_units: int = 10) -> list[dict]:
+    """Graph retrieval: explicit refs + full-text entry, then REFERENCES expansion."""
+    seeds = explicit_seeds(query) + [r["id"] for r in entry_nodes(driver, query, k_entry)]
+    return expand_from_seeds(driver, list(dict.fromkeys(seeds)), max_units)
 
 
 if __name__ == "__main__":
