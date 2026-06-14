@@ -18,17 +18,41 @@ import time
 from typing import Annotated
 
 from dotenv import load_dotenv
+from groq import Groq
 from langgraph.graph import END, StateGraph
 from neo4j import GraphDatabase
 from typing_extensions import TypedDict
 
-from src.agent.router import route_with_meta
+from src.agent.router import MODEL, route_with_meta
 from src.retrieval.graph_search import ensure_fulltext_index, graph_retrieve
 from src.retrieval.hybrid import hybrid_retrieve
 from src.retrieval.rag import generate_with_meta
 from src.retrieval.search import search
 
 load_dotenv()
+
+
+def condense_query(history: list[tuple[str, str]], question: str) -> str:
+    """Rewrite a follow-up into a standalone question using the conversation, so
+    retrieval works on 'what about deployers?' style follow-ups. Returns the
+    question unchanged when there's no history."""
+    if not history:
+        return question
+    convo = "\n".join(f"{role}: {content}" for role, content in history[-6:])
+    client = Groq()
+    resp = client.chat.completions.create(
+        model=MODEL,
+        temperature=0,
+        max_tokens=80,
+        messages=[
+            {"role": "system", "content":
+                "Rewrite the user's latest message into a single standalone question "
+                "about the EU AI Act, resolving references like 'it', 'that', 'they'. "
+                "If it is already standalone, return it unchanged. Output only the question."},
+            {"role": "user", "content": f"Conversation so far:\n{convo}\n\nLatest message: {question}"},
+        ],
+    )
+    return resp.choices[0].message.content.strip()
 
 _driver = None
 
