@@ -12,6 +12,8 @@ The router only chooses a strategy; the actual retrieval stays deterministic
 Run:  uv run python -m src.agent.router
 """
 
+import time
+
 from dotenv import load_dotenv
 from groq import Groq
 
@@ -34,8 +36,10 @@ ROUTER_SYSTEM = (
 )
 
 
-def route(query: str) -> str:
+def route_with_meta(query: str) -> tuple[str, dict, float]:
+    """Route and also return token usage + latency (for the trace UI)."""
     client = Groq()
+    t0 = time.time()
     resp = client.chat.completions.create(
         model=MODEL,
         temperature=0,
@@ -45,8 +49,16 @@ def route(query: str) -> str:
             {"role": "user", "content": query},
         ],
     )
+    latency = time.time() - t0
     word = resp.choices[0].message.content.strip().lower()
-    return word if word in STRATEGIES else "hybrid"
+    strategy = word if word in STRATEGIES else "hybrid"
+    u = resp.usage
+    usage = {"prompt": u.prompt_tokens, "completion": u.completion_tokens, "total": u.total_tokens}
+    return strategy, usage, latency
+
+
+def route(query: str) -> str:
+    return route_with_meta(query)[0]
 
 
 if __name__ == "__main__":

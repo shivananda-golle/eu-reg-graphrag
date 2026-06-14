@@ -16,4 +16,5 @@ dependencies = [
     "neo4j>=6.2.0",
     "python-dotenv>=1.2.2",
     "qdrant-client>=1.18.0",
+    "streamlit>=1.58.0",
 ]

@@ -9,6 +9,7 @@ Run:  uv run python -m src.retrieval.rag "your question"
 """
 
 import sys
+import time
 
 from dotenv import load_dotenv
 from groq import Groq
@@ -29,13 +30,14 @@ SYSTEM = (
 )
 
 
-def generate_answer(query: str, passages: list[dict]) -> str:
-    """Generate a grounded, cited answer from passages [{citation, text}, ...].
-    Shared by the vector path (here) and the graph path (compare.py)."""
+def generate_with_meta(query: str, passages: list[dict]) -> tuple[str, dict, float, str]:
+    """Generate and also return token usage, latency, and the exact context sent
+    (for the trace UI). Returns (answer, usage, latency, context)."""
     context = "\n\n".join(
         f"[{p['citation']}] {p['text'][:MAX_CHARS]}" for p in passages
     )
     client = Groq()
+    t0 = time.time()
     resp = client.chat.completions.create(
         model=MODEL,
         temperature=0,
@@ -44,7 +46,15 @@ def generate_answer(query: str, passages: list[dict]) -> str:
             {"role": "user", "content": f"Question: {query}\n\nContext:\n{context}"},
         ],
     )
-    return resp.choices[0].message.content
+    latency = time.time() - t0
+    u = resp.usage
+    usage = {"prompt": u.prompt_tokens, "completion": u.completion_tokens, "total": u.total_tokens}
+    return resp.choices[0].message.content, usage, latency, context
+
+
+def generate_answer(query: str, passages: list[dict]) -> str:
+    """Generate a grounded, cited answer from passages [{citation, text}, ...]."""
+    return generate_with_meta(query, passages)[0]
 
 
 def answer(query: str, k: int = 5) -> tuple[str, list]:
