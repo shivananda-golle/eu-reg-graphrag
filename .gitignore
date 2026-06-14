@@ -17,6 +17,7 @@ wheels/
 # Data artifacts
 data/raw/*
 data/processed/*
+data/qdrant/
 !data/**/.gitkeep
 
 # Notebooks / local stores

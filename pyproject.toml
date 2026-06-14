@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "beautifulsoup4>=4.15.0",
+    "fastembed>=0.8.0",
     "google-genai>=2.7.0",
     "groq>=1.4.0",
     "langfuse>=4.7.1",
@@ -13,4 +14,5 @@ dependencies = [
     "mistralai<2",
     "neo4j>=6.2.0",
     "python-dotenv>=1.2.2",
+    "qdrant-client>=1.18.0",
 ]
