@@ -29,10 +29,11 @@ SYSTEM = (
 )
 
 
-def answer(query: str, k: int = 5) -> tuple[str, list]:
-    hits = search(query, k)
+def generate_answer(query: str, passages: list[dict]) -> str:
+    """Generate a grounded, cited answer from passages [{citation, text}, ...].
+    Shared by the vector path (here) and the graph path (compare.py)."""
     context = "\n\n".join(
-        f"[{h.payload['citation']}] {h.payload['text'][:MAX_CHARS]}" for h in hits
+        f"[{p['citation']}] {p['text'][:MAX_CHARS]}" for p in passages
     )
     client = Groq()
     resp = client.chat.completions.create(
@@ -43,7 +44,15 @@ def answer(query: str, k: int = 5) -> tuple[str, list]:
             {"role": "user", "content": f"Question: {query}\n\nContext:\n{context}"},
         ],
     )
-    return resp.choices[0].message.content, hits
+    return resp.choices[0].message.content
+
+
+def answer(query: str, k: int = 5) -> tuple[str, list]:
+    hits = search(query, k)
+    passages = [
+        {"citation": h.payload["citation"], "text": h.payload["text"]} for h in hits
+    ]
+    return generate_answer(query, passages), hits
 
 
 if __name__ == "__main__":
