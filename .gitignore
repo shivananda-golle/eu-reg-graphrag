@@ -18,6 +18,7 @@ wheels/
 data/raw/*
 data/processed/*
 data/qdrant/
+data/eval/results.json
 !data/**/.gitkeep
 
 # Notebooks / local stores

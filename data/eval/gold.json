@@ -1,0 +1,106 @@
+[
+  {
+    "id": "ob1",
+    "category": "obligation_lookup",
+    "question": "What are the obligations of providers of high-risk AI systems?",
+    "expected_articles": [16],
+    "expected_annexes": [],
+    "reference_answer": "Providers of high-risk AI systems must ensure their systems comply with the Act's requirements, put a quality management system in place, draw up and keep technical documentation, keep logs, ensure the system undergoes the relevant conformity assessment, draw up an EU declaration of conformity, affix the CE marking, register the system, and take corrective actions where needed (Article 16)."
+  },
+  {
+    "id": "ob2",
+    "category": "obligation_lookup",
+    "question": "What obligations apply to deployers of high-risk AI systems?",
+    "expected_articles": [26],
+    "expected_annexes": [],
+    "reference_answer": "Deployers of high-risk AI systems must use them in accordance with the instructions for use, assign competent human oversight, ensure input data is relevant where they control it, monitor operation and inform the provider of risks or serious incidents, keep logs, and inform affected persons where required (Article 26)."
+  },
+  {
+    "id": "ob3",
+    "category": "obligation_lookup",
+    "question": "What transparency obligations apply to AI systems that interact with people or generate deep fakes?",
+    "expected_articles": [50],
+    "expected_annexes": [],
+    "reference_answer": "Providers must ensure people are informed when they interact with an AI system unless obvious; AI-generated or manipulated audio, image, video or text must be marked as artificially generated; and deployers must disclose deep fakes and AI-generated text published on matters of public interest (Article 50)."
+  },
+  {
+    "id": "cr1",
+    "category": "cross_reference",
+    "question": "What makes an AI system high-risk?",
+    "expected_articles": [6],
+    "expected_annexes": ["III"],
+    "reference_answer": "An AI system is high-risk if it is a safety component of, or is itself, a product covered by the Union harmonisation legislation in Annex I and requires third-party conformity assessment (Article 6(1)), or if it falls under one of the use cases listed in Annex III (Article 6(2)), subject to the exceptions in Article 6(3)."
+  },
+  {
+    "id": "cr2",
+    "category": "cross_reference",
+    "question": "What does Article 6 refer to when classifying high-risk AI systems?",
+    "expected_articles": [6],
+    "expected_annexes": ["I", "III"],
+    "reference_answer": "For high-risk classification Article 6 refers to the Union harmonisation legislation listed in Annex I and the high-risk use cases listed in Annex III."
+  },
+  {
+    "id": "cr3",
+    "category": "cross_reference",
+    "question": "Which annex lists the high-risk AI systems?",
+    "expected_articles": [],
+    "expected_annexes": ["III"],
+    "reference_answer": "Annex III lists the high-risk AI systems referred to in Article 6(2)."
+  },
+  {
+    "id": "cmp1",
+    "category": "comparative",
+    "question": "How do the obligations of providers differ from those of deployers of high-risk AI systems?",
+    "expected_articles": [16, 26],
+    "expected_annexes": [],
+    "reference_answer": "Providers (Article 16) carry build-phase obligations: ensuring compliance, a quality management system, technical documentation, conformity assessment, CE marking and registration. Deployers (Article 26) carry use-phase obligations: operating the system per instructions, assigning human oversight, monitoring, keeping logs, and informing affected persons."
+  },
+  {
+    "id": "cmp2",
+    "category": "comparative",
+    "question": "What is the difference between a provider and a deployer under the AI Act?",
+    "expected_articles": [3],
+    "expected_annexes": [],
+    "reference_answer": "A 'provider' develops an AI system (or has one developed) and places it on the market or puts it into service under its own name or trademark; a 'deployer' uses an AI system under its authority in the course of a professional activity (Article 3)."
+  },
+  {
+    "id": "pen1",
+    "category": "penalty_deadline",
+    "question": "What are the penalties for non-compliance with the AI Act?",
+    "expected_articles": [99],
+    "expected_annexes": [],
+    "reference_answer": "Article 99 requires Member States to lay down penalties, including administrative fines. The highest tier — up to EUR 35 million or 7% of total worldwide annual turnover, whichever is higher — applies to breaches of the prohibited-practices rules in Article 5, with lower tiers for other infringements."
+  },
+  {
+    "id": "pen2",
+    "category": "penalty_deadline",
+    "question": "What is the fine for using a prohibited AI practice?",
+    "expected_articles": [99, 5],
+    "expected_annexes": [],
+    "reference_answer": "Using a prohibited AI practice (Article 5) is subject to the highest fines — up to EUR 35 million or, if the offender is a company, up to 7% of its total worldwide annual turnover for the preceding year, whichever is higher (Article 99)."
+  },
+  {
+    "id": "pen3",
+    "category": "penalty_deadline",
+    "question": "When does the AI Act enter into force and start to apply?",
+    "expected_articles": [113],
+    "expected_annexes": [],
+    "reference_answer": "The AI Act entered into force on the twentieth day following its publication and applies from 2 August 2026, with staggered dates: the prohibitions (Article 5) apply from 2 February 2025, general-purpose AI model obligations from 2 August 2025, and certain high-risk obligations from 2 August 2027 (Article 113)."
+  },
+  {
+    "id": "pen4",
+    "category": "penalty_deadline",
+    "question": "What are the key application dates and deadlines in the AI Act?",
+    "expected_articles": [113],
+    "expected_annexes": [],
+    "reference_answer": "Per Article 113, the Act applies generally from 2 August 2026; prohibited practices (Article 5) apply from 2 February 2025; general-purpose AI model rules from 2 August 2025; and certain high-risk system obligations from 2 August 2027."
+  },
+  {
+    "id": "def1",
+    "category": "definition",
+    "question": "What is a 'provider' under the AI Act?",
+    "expected_articles": [3],
+    "expected_annexes": [],
+    "reference_answer": "A 'provider' is a natural or legal person, public authority, agency or other body that develops an AI system or a general-purpose AI model (or has one developed) and places it on the market or puts it into service under its own name or trademark, whether for payment or free of charge (Article 3)."
+  }
+]
