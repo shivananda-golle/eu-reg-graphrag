@@ -23,6 +23,7 @@ from langgraph.graph import END, StateGraph
 from neo4j import GraphDatabase
 from typing_extensions import TypedDict
 
+from src.agent.observability import log_run
 from src.agent.router import MODEL, route_with_meta
 from src.retrieval.graph_search import ensure_fulltext_index, graph_retrieve
 from src.retrieval.hybrid import hybrid_retrieve
@@ -166,10 +167,12 @@ AGENT = build_agent()
 
 
 def ask_traced(query: str, strategy: str | None = None) -> dict:
-    """Run the agent and return full state incl. trace. strategy=None -> agent routes."""
+    """Run the agent and return full state incl. trace. strategy=None -> agent routes.
+    Also logs the run to Langfuse (best-effort)."""
     t0 = time.time()
     state = AGENT.invoke({"query": query, "forced_strategy": strategy, "trace": {}})
     state["trace"]["total_latency"] = time.time() - t0
+    log_run(query, state)
     return state
 
 
