@@ -21,6 +21,13 @@ How the three retrieval strategies compare on a curated gold set. The goal is to
 - **Judge:** `src/eval/judge.py` uses `llama-3.1-8b-instant` — deliberately a *different*
   model than the `llama-3.3-70b` generator, to avoid self-preference bias.
 
+> **Why a custom judge instead of RAGAS?** RAGAS computes the same ideas (faithfulness,
+> answer correctness, context recall), but its current release hard-imports a
+> `langchain_community` path removed in the langchain **v1** stack that `langgraph`
+> (this project's agent) depends on. Satisfying RAGAS would mean downgrading langchain
+> and breaking the agent — so we implemented the metrics directly. Same substance,
+> no dependency conflict, and full control over the rubric.
+
 ## Results (mean over 13 questions)
 
 | Strategy | Context recall | Faithfulness | Correctness |
