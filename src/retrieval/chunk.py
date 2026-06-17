@@ -19,28 +19,58 @@ from pathlib import Path
 JSON_PATH = Path("data/processed/ai_act.json")
 OUT_PATH = Path("data/processed/ai_act_chunks.jsonl")
 
+# Paragraphs longer than this (chars) risk truncation at BGE's 512-token limit,
+# so if they have points we split them into one chunk per point. ~1500 chars is
+# comfortably under the limit; short paragraphs stay whole.
+LONG_PARA = 1500
+LEAD_CHARS = 200  # how much of the paragraph's lead to prepend for context
+
+
+def _lead(text: str, points: list[dict]) -> str:
+    """The paragraph's prose with its point bodies removed — the intro/context
+    we prepend to each point chunk so it still embeds well on its own."""
+    lead = text
+    for pt in points:
+        lead = lead.replace(f"{pt['label']} {pt['text']}", " ")
+    return " ".join(lead.split())
+
 
 def build_chunks(doc: dict) -> list[dict]:
     celex, url = doc["celex"], doc["source_url"]
     base = {"celex": celex, "source_url": url}
     chunks = []
 
-    # Article paragraphs.
+    # Article paragraphs. Long, point-heavy paragraphs (e.g. Article 3's 68
+    # definitions) get split into one chunk per point so each is independently
+    # searchable instead of one blob the embedder truncates at 512 tokens.
     for a in doc["articles"]:
         for p in a["paragraphs"]:
             if not p["text"].strip():
                 continue
-            chunks.append({
-                **base,
-                "chunk_id": p["para_id"],
-                "node_id": p["para_id"],
-                "node_type": "paragraph",
-                "article": a["number"],
-                "article_title": a["title"],
-                "paragraph": p["number"],
-                "citation": f"Article {a['number']}" + (f"({p['number']})" if p["number"] else ""),
-                "text": p["text"],
-            })
+            cite = f"Article {a['number']}" + (f"({p['number']})" if p["number"] else "")
+            common = {
+                **base, "node_id": p["para_id"], "article": a["number"],
+                "article_title": a["title"], "paragraph": p["number"],
+            }
+            if p["points"] and len(p["text"]) > LONG_PARA:
+                lead = _lead(p["text"], p["points"])[:LEAD_CHARS]
+                for i, pt in enumerate(p["points"], 1):
+                    chunks.append({
+                        **common,
+                        "chunk_id": f"{p['para_id']}#p{i}",
+                        "node_type": "point",
+                        "citation": f"{cite} {pt['label']}".strip(),
+                        # prepend article title + lead so the point has context
+                        "text": f"{a['title']}. {lead} {pt['label']} {pt['text']}".strip(),
+                    })
+            else:
+                chunks.append({
+                    **common,
+                    "chunk_id": p["para_id"],
+                    "node_type": "paragraph",
+                    "citation": cite,
+                    "text": p["text"],
+                })
 
     # Recitals.
     for r in doc["recitals"]:

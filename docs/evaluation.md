@@ -73,6 +73,29 @@ How the three retrieval strategies compare on a curated gold set. The goal is to
 - **penalty_deadline graph (0.40):** date-phrased questions ("key application dates")
   don't lexically match Article 113's wording; vector/hybrid semantics help.
 
+## Improvement applied: sub-chunking long list-articles
+
+The `definition` failure (and low vector recall generally) traced to one cause:
+Article 3's 68 definitions were a single ~17k-char chunk that the embedder
+truncates at 512 tokens. **Fix** (`chunk.py`): paragraphs over ~1500 chars that
+contain points are split into one chunk per point, each prefixed with the
+article title + paragraph lead for context ("contextual retrieval"). Chunk count
+830 → 1022; longest chunk 17,363 → 4,445 chars.
+
+Re-measured retrieval recall (token-free, retrieval only):
+
+| | Vector | Graph | Hybrid |
+|---|:------:|:-----:|:------:|
+| Overall **before** | 0.12 | 0.51 | 0.67 |
+| Overall **after**  | **0.38** | 0.51 | **0.82** |
+| `definition` before | 0.00 | 0.00 | 0.00 |
+| `definition` after  | **1.00** | 0.00 | **1.00** |
+
+Definition retrieval went 0.00 → 1.00 for vector and hybrid; "what is a
+'provider'?" now returns Article 3(3) as the top hit. Graph is unchanged — it
+seeds from full-text *entry*, so chunking doesn't help it; improving graph on
+definitions is a separate item (better entry ranking).
+
 ## Reproduce
 
 ```bash
