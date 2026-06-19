@@ -1,0 +1,13 @@
+# Keep the build context small + reproducible.
+.venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+.git/
+.env
+data/raw/
+data/qdrant/
+data/eval/results.json
+docs/
+*.md
+.gitignore

@@ -34,6 +34,16 @@ STRATEGIES = {
 @st.cache_resource
 def _warm():
     get_model()  # load the embedding model once, not per message
+    # Build the Qdrant index from the baked embeddings if it isn't there yet
+    # (fresh container). Cheap — seconds — and only runs once per boot.
+    from qdrant_client import QdrantClient
+
+    from src.retrieval.index import COLLECTION, QDRANT_PATH, build_index
+    client = QdrantClient(path=QDRANT_PATH)
+    missing = not client.collection_exists(COLLECTION)
+    client.close()
+    if missing:
+        build_index()
     return True
 
 
